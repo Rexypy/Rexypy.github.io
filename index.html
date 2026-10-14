@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#090d0b" />
+  <meta name="description" content="Rexy's project archive — experiments, tools, and things that probably started as a bad idea." />
+  <title>Rexy.exe — Project Archive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        fontFamily: { mono: ['ui-monospace', 'SFMono-Regular', 'monospace'] },
+        colors: { acid: '#65ff35', ink: '#090d0b', panel: '#111713' },
+        boxShadow: { glow: '0 0 28px rgba(101,255,53,.12)' }
+      }}
+    };
+  </script>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="bg-ink text-zinc-100 antialiased selection:bg-acid selection:text-black">
+  <div class="scanlines pointer-events-none fixed inset-0 z-50 opacity-[.06]"></div>
+  <header class="mx-auto flex max-w-6xl items-center justify-between px-5 py-6 sm:px-8">
+    <a href="#" class="font-mono text-sm tracking-widest text-acid"><span class="text-zinc-500">~/</span> REXY.EXE</a>
+    <nav class="flex items-center gap-5 text-sm text-zinc-400">
+      <a class="hover:text-acid" href="#projects">Projects</a>
+      <a class="hover:text-acid" href="#about">About</a>
+      <button id="themeToggle" class="rounded-full border border-zinc-700 px-3 py-2 font-mono text-xs transition hover:border-acid hover:text-acid" aria-label="Open the light mode joke">☼ LIGHT MODE?</button>
+      <button id="audioToggle" class="rounded-full border border-zinc-700 px-3 py-2 font-mono text-xs transition hover:border-acid hover:text-acid" type="button" aria-label="Turn sound on">SOUND: OFF</button>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-5 sm:px-8">
+    <section class="hero-grid relative grid items-center gap-10 overflow-hidden rounded-3xl border border-zinc-800 bg-panel px-6 py-12 shadow-glow sm:px-10 md:grid-cols-[1.2fr_.8fr] md:py-16">
+      <div class="relative z-10">
+        <p class="mb-5 font-mono text-xs uppercase tracking-[.3em] text-acid"><span class="pulse-dot">●</span> system online / curiosity detected</p>
+        <h1 class="max-w-2xl text-4xl font-black leading-tight tracking-tight sm:text-6xl">I build things.<br /><span class="neon-text">Some even work.</span></h1>
+        <p class="mt-6 max-w-xl text-base leading-7 text-zinc-400 sm:text-lg">Programmer, professional overthinker, and collector of side quests. This is where my experiments escape containment.</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="#projects" class="rounded-lg bg-acid px-5 py-3 font-mono text-sm font-bold text-black transition hover:-translate-y-0.5 hover:bg-white">EXPLORE PROJECTS ↘</a>
+          <a id="githubProfileLink" href="https://github.com/YOUR_GITHUB_USERNAME" target="_blank" rel="noreferrer" class="rounded-lg border border-zinc-700 px-5 py-3 font-mono text-sm transition hover:border-acid hover:text-acid">GITHUB PROFILE ↗</a>
+        </div>
+        <p class="mt-6 font-mono text-xs text-zinc-600">WARNING: may contain unfinished ideas and questionable variable names.</p>
+      </div>
+      <div class="relative mx-auto w-full max-w-xs">
+        <div class="absolute inset-4 rounded-full bg-acid/10 blur-3xl"></div>
+        <div class="mascot-frame relative rounded-3xl border border-acid/30 bg-black/40 p-5">
+          <img src="./assets/rexyavatar.png" alt="Neon green dinosaur boxing mascot" class="mascot mx-auto w-full max-w-[270px]" />
+          <div class="mt-3 flex items-center justify-between border-t border-zinc-800 pt-3 font-mono text-[10px] uppercase tracking-widest text-zinc-500"><span>Rexy // mascot</span><span class="text-acid">Lvl. ???</span></div>
+          <button id="treasureButton" class="treasure-button" aria-label="A suspiciously tiny green pixel" title="???" type="button">▪</button>
+        </div>
+        <button id="bugStatus" class="bug-status absolute -right-2 top-5 rounded-md border border-acid/40 bg-black px-3 py-2 font-mono text-xs text-acid" type="button" aria-label="Play Bug Invaders">NO BUGS<br /><span class="text-[9px] text-zinc-500">*probably</span></button>
+      </div>
+    </section>
+
+    <section id="about" class="grid gap-5 py-16 md:grid-cols-[.7fr_1.3fr]">
+      <div><p class="font-mono text-xs uppercase tracking-[.25em] text-acid">01 / About</p><h2 class="mt-3 text-3xl font-bold">A human-shaped<br />debugging process.</h2></div>
+      <div class="rounded-2xl border border-zinc-800 bg-panel p-6 sm:p-8">
+        <p class="leading-7 text-zinc-300">I like turning ideas into working software, learning how things tick, and occasionally making the computer do something it was absolutely not asked to do.</p>
+        <div class="mt-6 flex flex-wrap gap-2 font-mono text-xs">
+          <span class="tag">Python</span><span class="tag">Web</span><span class="tag">Automation</span><span class="tag">Experiments</span><span class="tag">More loading…</span>
+        </div>
+        <p class="mt-6 text-sm text-zinc-500">This page pulls public repositories from GitHub. Add a category topic to a repository and it can sort itself into the right shelf.</p>
+      </div>
+    </section>
+
+    <section id="projects" class="pb-20">
+      <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div><p class="font-mono text-xs uppercase tracking-[.25em] text-acid">02 / Repository index</p><h2 class="mt-3 text-3xl font-bold sm:text-4xl">The project vault</h2></div>
+        <p id="repoStatus" class="font-mono text-xs text-zinc-500" aria-live="polite">CONNECTING TO GITHUB…</p>
+      </div>
+      <div id="projectCategories" class="space-y-14">
+        <div class="skeleton-grid" aria-label="Loading projects"><div></div><div></div><div></div></div>
+      </div>
+      <div class="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-800 pt-5 text-xs text-zinc-600">
+        <button id="refreshProjects" class="font-mono text-acid hover:text-white">↻ RE-SCAN REPOSITORIES</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-zinc-900">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-7 font-mono text-xs text-zinc-600 sm:px-8">
+      <span>© <span id="year"></span> REXY.EXE — BUILT WITH CURIOSITY</span><button id="terminalHint" class="terminal-hint" type="button" title="Open developer console">IF IT WORKS, DON'T TOUCH IT.</button>
+    </div>
+  </footer>
+
+  <div id="bootOverlay" class="boot-overlay hidden" role="dialog" aria-modal="true" aria-label="Rexy.exe startup sequence">
+    <div class="boot-panel">
+      <div class="mb-5 flex items-center justify-between"><span class="font-mono text-xs tracking-widest text-acid">REXY.EXE / BOOT ROM</span><span class="font-mono text-xs text-zinc-600">v0.0.∞</span></div>
+      <pre id="bootLines" class="boot-lines"></pre>
+      <div class="boot-progress"><span id="bootProgress"></span></div>
+      <div class="boot-controls mt-5"><div id="bootAudioPrompt" class="boot-audio-prompt"><span>AUDIO OUTPUT?</span><button id="bootAudioOn" type="button">[ SOUND: ON ]</button><button id="bootAudioOff" type="button">[ SOUND: OFF ]</button></div><button id="bootSkip" class="font-mono text-xs text-acid hover:text-white" type="button" hidden>[ SKIP BOOT SEQUENCE ▸ ]</button></div>
+    </div>
+  </div>
+
+  <div id="shooterOverlay" class="game-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="gameTitle">
+    <div class="game-panel">
+      <div class="mb-3 flex items-center justify-between gap-3"><div><p class="font-mono text-[10px] tracking-widest text-acid">OPTIONAL SIDE QUEST</p><h2 id="gameTitle" class="text-xl font-bold">REXY: BUG INVADERS</h2></div><button id="gameClose" class="font-mono text-xs text-zinc-400 hover:text-white" type="button">[ ESC / CLOSE ]</button></div>
+      <p class="mb-3 text-xs text-zinc-500">Move: ← → or A/D · Shoot: Space · On mobile: use the buttons below.</p>
+      <canvas id="shooterCanvas" width="640" height="360" aria-label="Tiny space shooter game"></canvas>
+      <div class="mt-3 flex items-center justify-between gap-3"><span id="gameStatus" class="font-mono text-xs text-acid">SCORE: 0 / 8</span><button id="gameRestart" class="rounded border border-zinc-700 px-3 py-2 font-mono text-xs hover:border-acid hover:text-acid" type="button">RESTART</button></div>
+      <div class="mt-3 flex justify-center gap-3 sm:hidden"><button id="gameLeft" class="game-pad" type="button">◀</button><button id="gameFire" class="game-pad" type="button">FIRE</button><button id="gameRight" class="game-pad" type="button">▶</button></div>
+    </div>
+  </div>
+
+  <div id="dialogueOverlay" class="dialogue-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="dialogueText">
+    <button id="dialogueBackdrop" class="absolute inset-0 cursor-default" aria-label="Close dialogue"></button>
+    <div class="dialogue-box relative z-10">
+      <img src="./assets/rexyavatar.png" alt="" class="dialogue-avatar" />
+      <div class="dialogue-content"><div class="mb-2 flex items-center justify-between gap-3"><span id="dialogueName" class="font-mono text-xs uppercase tracking-widest text-acid">REXY.EXE</span><span class="font-mono text-[10px] text-zinc-600">NPC DIALOGUE</span></div>
+        <p id="dialogueText" class="min-h-[3.5rem] text-sm leading-6 text-zinc-200"></p>
+        <button id="dialogueContinue" class="mt-4 font-mono text-xs text-acid hover:text-white">[ CLICK TO CONTINUE ▸ ]</button>
+      </div>
+    </div>
+  </div>
+  <script src="./script.js"></script>
+</body>
+</html>
