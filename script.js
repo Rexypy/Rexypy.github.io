@@ -1,4 +1,5 @@
 const GITHUB_USERNAME = "Rexypy";
+const PORTFOLIO_REPOSITORY = "Rexypy.github.io";
 const MAX_PROJECTS_PER_CATEGORY = 6;
 const CATEGORIES = [
   { id: "web", label: "Web", icon: "🕸", topics: ["portfolio-web", "web", "website", "frontend"] },
@@ -115,6 +116,19 @@ const UNDER_CONSTRUCTION_MESSAGES = [
   "Nothing to see here yet. Please admire the structural optimism."
 ];
 
+const SHOW_MORE_UNDER_CONSTRUCTION_MESSAGES = [
+  "You found an under-construction slot. There is nothing further behind it yet.",
+  "The next shelf is still occupied by future projects and questionable optimism.",
+  "No more repositories to reveal here. The placeholders are not hiding anything. Probably.",
+  "That section is still under construction. Rexy recommends checking back after the next commit."
+];
+const SHOW_MORE_EXACTLY_SIX_MESSAGES = [
+  "Exactly six projects. A perfectly filled shelf. Please do not disturb the symmetry.",
+  "Six out of six slots filled. This category has achieved shelf completion.",
+  "That is the whole set: six projects, zero secret bonus levels.",
+  "All six projects are already on display. Rexy has checked behind the shelf too."
+];
+
 const categoryRoot = document.querySelector("#projectCategories");
 const repoStatus = document.querySelector("#repoStatus");
 const refreshProjectsButton = document.querySelector("#refreshProjects");
@@ -126,6 +140,7 @@ let typingTimer = null;
 let fullDialogue = "";
 let isTyping = false;
 let currentRepoList = [];
+let visibleProjectsByCategory = {};
 
 let audioContext = null;
 let bugMusicTimer = null;
@@ -345,6 +360,9 @@ function esc(value = "") {
 function normalizedTopics(repo) {
   return (repo.topics || []).map(x => String(x).toLowerCase());
 }
+function isPortfolioRepository(repo) {
+  return repo.name?.toLowerCase() === PORTFOLIO_REPOSITORY.toLowerCase();
+}
 function classify(repo) {
   const topics = normalizedTopics(repo);
   for (const cat of CATEGORIES) {
@@ -397,22 +415,55 @@ function makePlaceholder(category, index) {
     <div class="card-bottom"><span>STATUS: MAYBE</span><span>DO NOT SHAKE</span></div>
   </button>`;
 }
+function randomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+function projectBuckets(repos) {
+  const buckets = Object.fromEntries(CATEGORIES.map(category => [category.id, []]));
+  repos.filter(repo => !repo.fork && !repo.archived && !isPortfolioRepository(repo))
+    .forEach(repo => buckets[classify(repo)].push(repo));
+  Object.values(buckets).forEach(list => list.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)));
+  return buckets;
+}
 function renderProjects(repos, animate = false) {
-  const buckets = Object.fromEntries(CATEGORIES.map(c => [c.id, []]));
-  repos.filter(r => !r.fork && !r.archived).forEach(repo => buckets[classify(repo)].push(repo));
+  const buckets = projectBuckets(repos);
   categoryRoot.innerHTML = CATEGORIES.map(category => {
-    const list = buckets[category.id].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, MAX_PROJECTS_PER_CATEGORY);
+    const projects = buckets[category.id];
+    const visibleCount = Math.min(visibleProjectsByCategory[category.id] || MAX_PROJECTS_PER_CATEGORY, projects.length);
+    const list = projects.slice(0, visibleCount);
     const cards = list.map(repo => makeProjectCard(repo, category)).join("");
-    const placeholders = Array.from({ length: Math.max(0, MAX_PROJECTS_PER_CATEGORY - list.length) }, (_, i) => makePlaceholder(category, i)).join("");
+    const finalRowSize = list.length === 0 ? 0 : list.length % MAX_PROJECTS_PER_CATEGORY || MAX_PROJECTS_PER_CATEGORY;
+    const placeholders = Array.from({ length: MAX_PROJECTS_PER_CATEGORY - finalRowSize }, (_, i) => makePlaceholder(category, i)).join("");
     return `<section aria-labelledby="heading-${category.id}">
-      <div class="category-heading"><h3 class="category-title" id="heading-${category.id}"><span class="mr-2 text-acid">${category.icon}</span>${esc(category.label)}</h3><span class="category-count">${list.length} PROJECT${list.length === 1 ? "" : "S"} / 06</span></div>
+      <div class="category-heading"><h3 class="category-title" id="heading-${category.id}"><span class="mr-2 text-acid">${category.icon}</span>${esc(category.label)}</h3><span class="category-count">${list.length} / ${projects.length} PROJECT${projects.length === 1 ? "" : "S"}</span></div>
       <div class="project-grid">${cards}${placeholders}</div>
+      <button class="mt-4 font-mono text-xs text-acid hover:text-white" type="button">SHOW MORE ▸</button>
     </section>`;
   }).join("");
   categoryRoot.querySelectorAll("[data-placeholder]").forEach(button => button.addEventListener("click", () => {
     const message = UNDER_CONSTRUCTION_MESSAGES[Math.floor(Math.random() * UNDER_CONSTRUCTION_MESSAGES.length)];
     showDialogue(message, "PROJECT STATUS: HONEST");
   }));
+  CATEGORIES.forEach(category => {
+    const section = categoryRoot.querySelector(`#heading-${category.id}`)?.closest("section");
+    const button = section?.querySelector("button:not(.placeholder)");
+    if (!button) return;
+    const projects = buckets[category.id];
+    const visibleCount = Math.min(visibleProjectsByCategory[category.id] || MAX_PROJECTS_PER_CATEGORY, projects.length);
+    button.hidden = projects.length > MAX_PROJECTS_PER_CATEGORY && visibleCount >= projects.length;
+    button.addEventListener("click", () => {
+      if (section.querySelector(".placeholder")) {
+        showDialogue(randomItem(SHOW_MORE_UNDER_CONSTRUCTION_MESSAGES), "PROJECT STATUS: HONEST");
+        return;
+      }
+      if (projects.length === MAX_PROJECTS_PER_CATEGORY) {
+        showDialogue(randomItem(SHOW_MORE_EXACTLY_SIX_MESSAGES), "PROJECT STATUS: COMPLETE");
+        return;
+      }
+      visibleProjectsByCategory[category.id] = Math.min(visibleCount + MAX_PROJECTS_PER_CATEGORY, projects.length);
+      renderProjects(repos);
+    });
+  });
   if (animate) {
     categoryRoot.querySelectorAll(".project-card").forEach((card, index) => {
       card.classList.add("scan-reveal");
@@ -445,7 +496,7 @@ async function loadProjects({ animate = false } = {}) {
     const repos = await response.json();
     currentRepoList = repos;
     renderProjects(repos, animate);
-    const total = repos.filter(r => !r.fork && !r.archived).length;
+    const total = repos.filter(r => !r.fork && !r.archived && !isPortfolioRepository(r)).length;
     repoStatus.textContent = `${total} REPOSITORIES FOUND · LIVE FROM GITHUB`;
     const webRepos = repos.filter(r => classify(r) === "web" && r.has_pages);
     await Promise.all(webRepos.map(async repo => {
@@ -812,7 +863,7 @@ function terminalPrint(text) {
 
 function terminalPrintProjects() {
   const projects = currentRepoList
-    .filter(repo => !repo.fork && !repo.archived)
+    .filter(repo => !repo.fork && !repo.archived && !isPortfolioRepository(repo))
     .sort((a, b) => a.name.localeCompare(b.name));
   if (!projects.length) {
     terminalPrint("ProjectVault is still loading. Try again in a moment.");
